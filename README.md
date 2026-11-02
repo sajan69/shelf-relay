@@ -72,8 +72,9 @@ handles. Dependencies are pinned; Django supplies authentication, CSRF, forms
 and ORM transactions rather than custom substitutes. Node tools are
 development-only.
 
-See [state and data semantics](docs/SEMANTICS.md) and
-[security and operational limits](docs/SECURITY.md). Fixtures and automated
+See [state and data semantics](docs/SEMANTICS.md),
+[security and operational limits](docs/SECURITY.md), and
+[verification and worked outcomes](docs/EVALUATION.md). Fixtures and automated
 tests use fictional records. A successful test run is not a claim of production
 adoption or equipment safety. Docker and real-browser checks must be run in an
 environment that supports them; no local execution of those checks is implied by
