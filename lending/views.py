@@ -25,9 +25,10 @@ def show_error(request, error):
         if constraint not in {
             "no_overlapping_active_bookings",
             "one_physical_checkout",
+            "lending_item_code_key",
         }:
             raise error
-        text = "Another request changed availability. Reload and try again."
+        text = "Another request changed this record. Reload and try again."
     else:
         text = " ".join(error.messages)
     messages.error(request, text)
@@ -72,14 +73,18 @@ def detail(request, pk):
 def new_item(request):
     form = ItemForm(request.POST if request.method == "POST" else None)
     if request.method == "POST" and form.is_valid():
-        item = services.create_item(
-            request.user,
-            form.cleaned_data["code"],
-            form.cleaned_data["name"],
-            form.cleaned_data["checklist"],
-        )
-        messages.success(request, "Item added to the shelf.")
-        return redirect("detail", item.pk)
+        try:
+            item = services.create_item(
+                request.user,
+                form.cleaned_data["code"],
+                form.cleaned_data["name"],
+                form.cleaned_data["checklist"],
+            )
+        except (ValidationError, IntegrityError) as error:
+            show_error(request, error)
+        else:
+            messages.success(request, "Item added to the shelf.")
+            return redirect("detail", item.pk)
     return render(
         request,
         "lending/form.html",

@@ -21,7 +21,9 @@ class BrowserTests(StaticLiveServerTestCase):
         self.addCleanup(self.browser.close)
         self.page = self.browser.new_page()
         self.page.goto(self.live_server_url)
-        expect(self.page.get_by_role("heading", name="Welcome to ShelfRelay.")).to_be_visible()
+        expect(
+            self.page.get_by_role("heading", name="Welcome to ShelfRelay.")
+        ).to_be_visible()
         self.page.get_by_label("Username", exact=False).fill("manager")
         self.page.get_by_label("Password", exact=False).fill("test-only-long-password")
         self.page.get_by_role("button", name="Sign in", exact=True).click()
@@ -83,3 +85,17 @@ class BrowserTests(StaticLiveServerTestCase):
         self.assertEqual(external, [])
         Path("artifacts").mkdir(exist_ok=True)
         page.screenshot(path="artifacts/mobile.png", full_page=True)
+
+    def test_manager_creates_a_kit_with_framework_validation(self):
+        page = self.page
+        page.get_by_role("link", name="Add an item", exact=True).click()
+        page.get_by_label("Code", exact=False).fill("new-kit")
+        page.get_by_label("Name", exact=False).fill("Workshop kit")
+        page.get_by_label("Checklist", exact=False).fill("Main unit\nCable\nCase")
+        page.get_by_role("button", name="Add item", exact=True).click()
+        expect(
+            page.get_by_role("heading", name="Workshop kit", exact=True)
+        ).to_be_visible()
+        expect(
+            page.get_by_role("listitem").filter(has_text="Main unit")
+        ).to_be_visible()

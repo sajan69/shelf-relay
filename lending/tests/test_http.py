@@ -61,3 +61,20 @@ class HttpTests(TestCase):
         self.client.post(reverse("receive", args=[loan.pk]), {"returned": ["0"]})
         loan.refresh_from_db()
         self.assertEqual(loan.missing_components, ["Cable"])
+
+    def test_all_unchecked_return_marks_every_component_missing(self):
+        loan = booking(self.actor, self.item)
+        services.checkout(self.actor, loan.pk)
+        self.client.force_login(self.actor)
+        response = self.client.post(reverse("receive", args=[loan.pk]), {})
+        self.assertEqual(response.status_code, 302)
+        loan.refresh_from_db()
+        self.assertEqual(loan.missing_components, ["Body", "Cable"])
+
+    def test_manager_creates_item_and_duplicate_form_keeps_original(self):
+        self.client.force_login(self.actor)
+        payload = {"code": "new-kit", "name": "New kit", "checklist": "Body\nCase"}
+        self.assertEqual(self.client.post("/items/new/", payload).status_code, 302)
+        response = self.client.post("/items/new/", {**payload, "name": "Changed"})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "already exists")

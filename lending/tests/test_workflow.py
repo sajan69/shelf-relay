@@ -1,4 +1,5 @@
 from datetime import timedelta
+from unittest.mock import patch
 
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import IntegrityError, transaction
@@ -146,3 +147,23 @@ class WorkflowTests(TestCase):
         loan.status = "out"
         loan.save()
         self.assertTrue(loan.overdue)
+
+    def test_event_failure_rolls_back_booking_and_state(self):
+        before = Booking.objects.count()
+        with patch(
+            "lending.services.record",
+            side_effect=RuntimeError("Injected event failure"),
+        ):
+            with self.assertRaises(RuntimeError):
+                booking(self.actor, self.item)
+        self.assertEqual(Booking.objects.count(), before)
+        loan = booking(self.actor, self.item)
+        with patch(
+            "lending.services.record",
+            side_effect=RuntimeError("Injected event failure"),
+        ):
+            with self.assertRaises(RuntimeError):
+                services.checkout(self.actor, loan.pk)
+        loan.refresh_from_db()
+        self.assertEqual(loan.status, "reserved")
+        self.assertIsNone(loan.checked_out_at)
