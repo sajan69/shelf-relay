@@ -55,13 +55,17 @@ errors fail the job; transient network refusals are not silently counted as
 valid links. No general vulnerability assessment or accessibility certification
 is inferred.
 
-Docker CI also exercises `pg_dump`/`pg_restore` in a separate synthetic database
-and compares every ordered row in seven application/account tables without
-logging their contents. This checks the supplied fixture's restore path, not
-arbitrary production backup retention, recovery objectives or administrator
-procedures. The original database is not replaced. CI containers and their
-test-only volume are removed after the job; users' retained Compose volumes are
-not part of that test.
+The
+[backup verification run](https://github.com/sajan69/shelf-relay/actions/runs/41406170974)
+at
+[8a4d886](https://github.com/sajan69/shelf-relay/commit/8a4d88633248f1e7f00fd1ab147e6c3ecf7fe4fb)
+passed the same four jobs and exercised `pg_dump`/`pg_restore` in a separate
+synthetic database and compares every ordered row in seven application/account
+tables without logging their contents. This checks the supplied fixture's
+restore path, not arbitrary production backup retention, recovery objectives or
+administrator procedures. The original database is not replaced. CI containers
+and their test-only volume are removed after the job; users' retained Compose
+volumes are not part of that test.
 
 ## Evidence limits
 

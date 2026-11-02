@@ -35,11 +35,23 @@ resolve the attention flag with a note while retaining the original
 incomplete-return record.
 
 **Loans** separates physical overdue loans from uncollected reservations and
-exports CSV. Viewer, Lender and Manager permission groups are configured by
-`python manage.py setup_roles`; accounts and group assignments are managed
-through Django's management shell. This installation serves one organisation. It
-has no public signup, payments, borrower messages, photos or safety
-certification.
+exports CSV. This installation serves one organisation. It has no public signup,
+payments, borrower messages, photos or safety certification.
+
+For a fresh installation without fictional records, replace the demo command
+with:
+
+```sh
+docker compose run --rm web python manage.py setup_roles
+docker compose run --rm web python manage.py add_staff your-login --role Manager
+```
+
+The password is prompted twice and checked by Django; it is not passed on the
+command line. Use the same command with role `Lender` or `Viewer` for other
+staff. Manager accounts manage lending records, not server administration. Host
+operators can use Django's `changepassword` command for recovery. The included
+Compose credentials still require replacement and a deployment review before
+network use.
 
 ## Development and checks
 
