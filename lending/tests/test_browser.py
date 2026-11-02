@@ -16,19 +16,18 @@ class BrowserTests(StaticLiveServerTestCase):
         self.actor = staff()
         self.item = item(self.actor)
         self.engine = sync_playwright().start()
+        self.addCleanup(self.engine.stop)
         self.browser = self.engine.chromium.launch()
+        self.addCleanup(self.browser.close)
         self.page = self.browser.new_page()
         self.page.goto(self.live_server_url)
-        self.page.get_by_label("Username", exact=True).fill("manager")
-        self.page.get_by_label("Password", exact=True).fill("test-only-long-password")
+        expect(self.page.get_by_role("heading", name="Welcome to ShelfRelay.")).to_be_visible()
+        self.page.get_by_label("Username", exact=False).fill("manager")
+        self.page.get_by_label("Password", exact=False).fill("test-only-long-password")
         self.page.get_by_role("button", name="Sign in", exact=True).click()
         expect(
             self.page.get_by_role("heading", name="Ready for the next handover.")
         ).to_be_visible()
-
-    def tearDown(self):
-        self.browser.close()
-        self.engine.stop()
 
     def test_reserve_handover_incomplete_return_and_resolve(self):
         page = self.page
@@ -36,12 +35,12 @@ class BrowserTests(StaticLiveServerTestCase):
             "link"
         ).click()
         page.get_by_role("link", name="Reserve this item").click()
-        page.get_by_label("Borrower display name", exact=True).fill("Demo · Sam")
+        page.get_by_label("Borrower display name", exact=False).fill("Demo · Sam")
         now = timezone.localtime(timezone.now())
-        page.get_by_label("Start", exact=True).fill(
+        page.get_by_label("Start", exact=False).fill(
             (now - timedelta(minutes=1)).strftime("%Y-%m-%dT%H:%M")
         )
-        page.get_by_label("Due back", exact=True).fill(
+        page.get_by_label("Due back", exact=False).fill(
             (now + timedelta(hours=1)).strftime("%Y-%m-%dT%H:%M")
         )
         page.get_by_role("button", name="Save reservation").click()
