@@ -1,0 +1,75 @@
+{% extends "lending/base.html" %}
+{% block content %}
+  <a href="{% url 'catalogue' %}">← Back to the shelf</a>
+  <div class="intro">
+    <div>
+      <p class="eyebrow">{{ item.code }}</p>
+      <h1>{{ item.name }}</h1>
+      {% if item.needs_attention %}
+        <p class="badge attention">Needs attention · unavailable</p>
+      {% endif %}
+    </div>
+    {% if perms.lending.operate_loans and not item.needs_attention %}
+      <a class="button" href="{% url 'reserve' item.pk %}">Reserve this item</a>
+    {% endif %}
+  </div>
+  <div class="columns">
+    <section class="panel">
+      <h2>Every piece matters</h2>
+      <ul>
+        {% for component in item.components %}
+          <li>{{ component }}</li>
+        {% endfor %}
+      </ul>
+      <p class="muted">A reservation is not a physical handover. Checkout is available only during the reserved window.</p>
+      {% if item.needs_attention and perms.lending.manage_catalogue %}
+        <h3>Resolve missing components</h3>
+        <form method="post" action="{% url 'resolve' item.pk %}">
+          {% csrf_token %}{{ resolve_form.as_div }}<button type="submit">Resolve attention flag</button>
+        </form>
+      {% endif %}
+    </section>
+    <section class="panel">
+      <h2>Recent handovers & reservations</h2>
+      <p class="muted">Latest 20 by planned start. See Loans for the full history.</p>
+      {% for booking in bookings %}
+        <article class="loan">
+          <h3>{{ booking.borrower }}</h3>
+          <p>{{ booking.get_status_display }}{% if booking.overdue %} · OVERDUE{% endif %}</p>
+          <p>{{ booking.start|date:'j M Y H:i' }} → {{ booking.end|date:'j M Y H:i' }}</p>
+          {% if booking.missing_components %}
+            <p class="attention">Missing at return: {{ booking.missing_components|join:', ' }}</p>
+          {% endif %}
+          {% if perms.lending.operate_loans %}
+            {% if booking.status == "reserved" %}
+              <div class="actions">
+                <form method="post" action="{% url 'transition' booking.pk 'checkout' %}">
+                  {% csrf_token %}
+                  <button type="submit">Record handover</button>
+                </form>
+                <form method="post" action="{% url 'transition' booking.pk 'cancel' %}">
+                  {% csrf_token %}
+                  <button type="submit" class="quiet">Cancel reservation</button>
+                </form>
+              </div>
+            {% elif booking.status == "out" %}
+              <a class="button" href="{% url 'receive' booking.pk %}">Receive return</a>
+            {% endif %}
+          {% endif %}
+        </article>
+      {% empty %}
+        <p>No handovers yet. Reserve a time to get started.</p>
+      {% endfor %}
+    </section>
+  </div>
+  <section class="panel">
+    <h2>Activity</h2>
+    <p class="muted">Latest 20 events. Original incomplete-return records remain after resolution.</p>
+    <ol>
+      {% for event in events %}
+        <li>{{ event.at|date:'j M Y H:i' }} · {{ event.action }} · {{ event.actor.username }}{% if event.note %} — {{ event.note }}{% endif %}
+        </li>
+      {% endfor %}
+    </ol>
+  </section>
+{% endblock %}

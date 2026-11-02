@@ -1,0 +1,14 @@
+{% extends "lending/base.html" %}
+{% block content %}
+  <section class="panel narrow">
+    <a href="{% url 'catalogue' %}">← Back to the shelf</a>
+    <h1>{{ title }}</h1>
+    <p>Times are entered in {{ site_zone }}. Ambiguous or nonexistent daylight-saving times are refused.</p>
+    {% if hint %}
+      <p class="notice">{{ hint }}</p>
+    {% endif %}
+    <form method="post">
+      {% csrf_token %}{{ form.as_div }}<button type="submit">{{ button }}</button>
+    </form>
+  </section>
+{% endblock %}

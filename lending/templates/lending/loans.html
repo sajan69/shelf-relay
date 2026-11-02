@@ -1,0 +1,43 @@
+{% extends "lending/base.html" %}
+{% block content %}
+  <p class="eyebrow">THE HANDOVER DESK</p>
+  <h1>{% if overdue_only %}Overdue loans{% else %}Loans & reservations{% endif %}</h1>
+  <div class="actions">
+    <a href="{% url 'loans' %}">All records</a>
+    <a href="{% url 'loans' %}?overdue=1">Overdue only</a>
+    {% if perms.lending.operate_loans %}
+      <a href="{% url 'export' %}">Export CSV</a>
+    {% endif %}
+  </div>
+  <p>Overdue means checked out and past the due time; uncollected reservations are not physical loans.</p>
+  <div class="table-scroll">
+    <table>
+      <caption>Reservation and physical-loan history</caption>
+      <thead>
+        <tr>
+          <th>Item</th>
+          <th>Borrower</th>
+          <th>Due back</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for booking in page %}
+          <tr>
+            <td>
+              <a href="{% url 'detail' booking.item_id %}">{{ booking.item.name }}</a>
+            </td>
+            <td>{{ booking.borrower }}</td>
+            <td>{{ booking.end|date:'j M Y H:i' }}</td>
+            <td>{{ booking.get_status_display }}{% if booking.overdue %} · OVERDUE{% endif %}</td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="4">No matching records.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include "lending/pagination.html" %}
+{% endblock %}

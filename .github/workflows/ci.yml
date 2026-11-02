@@ -1,0 +1,71 @@
+name: Verify
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - run: pip install -r requirements-dev.txt
+      - run: npm ci --ignore-scripts
+      - run: pip check
+      - run: ruff check . && ruff format --check .
+      - run: djlint lending/templates --check && djlint lending/templates --lint
+      - run: npm run format:check
+      - run: npm run links
+      - run: python manage.py makemigrations --check --dry-run
+        env:
+          DJANGO_SECRET_KEY: public-ci-only-key
+  postgres:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        pg: ["16", "18"]
+    services:
+      postgres:
+        image: postgres:${{ matrix.pg }}
+        env:
+          POSTGRES_USER: shelf
+          POSTGRES_PASSWORD: public-ci-database-only
+          POSTGRES_DB: shelf_relay
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U shelf -d shelf_relay" --health-interval 5s
+          --health-timeout 5s --health-retries 10
+    env:
+      PGHOST: 127.0.0.1
+      PGUSER: shelf
+      PGPASSWORD: public-ci-database-only
+      PGDATABASE: shelf_relay
+      DJANGO_SECRET_KEY: public-ci-only-secret
+      DJANGO_DEBUG: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements-dev.txt
+      - run: pip check
+      - run: python manage.py test --exclude-tag browser -v 2
+      - run: python manage.py migrate --noinput && python manage.py demo --demo
+      - run: python manage.py demo --demo && exit 1 || test $? -eq 1
+        name: Verify demo refuses a populated installation
+      - if: matrix.pg == '18'
+        run: python -m playwright install --with-deps chromium
+      - if: matrix.pg == '18'
+        run: python manage.py test --tag browser -v 2
+      - if: always() && matrix.pg == '18'
+        uses: actions/upload-artifact@v4
+        with:
+          name: shelf-relay-browser
+          path: artifacts/
+          retention-days: 7

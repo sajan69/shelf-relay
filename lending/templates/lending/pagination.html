@@ -1,0 +1,9 @@
+<nav aria-label="Pages" class="pagination">
+  {% if page.has_previous %}
+    <a href="?page={{ page.previous_page_number }}&q={{ query|urlencode }}{% if overdue_only %}&overdue=1{% endif %}">Previous</a>
+  {% endif %}
+  <span>Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
+  {% if page.has_next %}
+    <a href="?page={{ page.next_page_number }}&q={{ query|urlencode }}{% if overdue_only %}&overdue=1{% endif %}">Next</a>
+  {% endif %}
+</nav>

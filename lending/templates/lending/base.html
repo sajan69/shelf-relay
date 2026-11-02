@@ -1,0 +1,39 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en-au">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>{% block title %}ShelfRelay{% endblock %}</title>
+    <meta name="description"
+          content="Shared equipment, clear handovers and complete kit returns.">
+    <link rel="stylesheet" href="{% static 'lending/app.css' %}">
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header>
+      <a class="brand"
+         href="{% url 'catalogue' %}">ShelfRelay<span>SHARED THINGS, CLEAR HANDOVERS</span>
+      </a>
+      {% if user.is_authenticated %}
+        <nav aria-label="Main navigation">
+          <a href="{% url 'catalogue' %}">The shelf</a>
+          <a href="{% url 'loans' %}">Loans</a>
+          <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="quiet">Sign out</button>
+          </form>
+        </nav>
+      {% endif %}
+    </header>
+    <main id="main">
+      {% for message in messages %}
+        <p class="notice {{ message.tags }}" role="status">{{ message }}</p>
+      {% endfor %}
+      {% block content %}{% endblock %}
+    </main>
+    <footer>
+      One organisation · Times in {{ site_zone }} · Staff records, not safety certification
+    </footer>
+  </body>
+</html>

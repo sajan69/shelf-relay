@@ -1,0 +1,11 @@
+{% extends "lending/base.html" %}
+{% block content %}
+  <section class="panel narrow">
+    <p class="eyebrow">THE HANDOVER DESK</p>
+    <h1>Welcome to ShelfRelay.</h1>
+    <p>Sign in with the staff account provided by your organisation.</p>
+    <form method="post">
+      {% csrf_token %}{{ form.as_div }}<button type="submit">Sign in</button>
+    </form>
+  </section>
+{% endblock %}

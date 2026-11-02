@@ -1,0 +1,42 @@
+{% extends "lending/base.html" %}
+{% block content %}
+  <div class="intro">
+    <div>
+      <p class="eyebrow">THE SHARED SHELF</p>
+      <h1>Ready for the next handover.</h1>
+      <p>Find a kit, reserve its time and keep every piece accounted for.</p>
+    </div>
+    {% if perms.lending.manage_catalogue %}
+      <a class="button" href="{% url 'new_item' %}">Add an item</a>
+    {% endif %}
+  </div>
+  <form method="get" class="search">
+    <label for="q">Find equipment</label>
+    <input id="q"
+           name="q"
+           value="{{ query }}"
+           maxlength="100"
+           placeholder="Search by item name">
+    <button type="submit">Search</button>
+  </form>
+  <div class="grid">
+    {% for item in page %}
+      <article class="card">
+        <p class="eyebrow">{{ item.code }}</p>
+        <h2>
+          <a href="{% url 'detail' item.pk %}">{{ item.name }}</a>
+        </h2>
+        <p>{{ item.components|length }} components in the checklist</p>
+        {% if item.needs_attention %}
+          <p class="badge attention">Needs attention · unavailable</p>
+        {% else %}
+          <p class="badge">Check dates for availability</p>
+        {% endif %}
+        <a href="{% url 'detail' item.pk %}">View kit & handovers →</a>
+      </article>
+    {% empty %}
+      <p>No items found. A manager can add the first kit.</p>
+    {% endfor %}
+  </div>
+  {% include "lending/pagination.html" %}
+{% endblock %}

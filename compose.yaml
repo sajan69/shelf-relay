@@ -1,0 +1,30 @@
+services:
+  db:
+    image: postgres:18
+    environment:
+      POSTGRES_DB: shelf_relay
+      POSTGRES_USER: shelf
+      POSTGRES_PASSWORD: local-demo-database-only
+    volumes:
+      - shelf_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U shelf -d shelf_relay"]
+      interval: 3s
+      timeout: 3s
+      retries: 15
+  web:
+    build: .
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment:
+      PGHOST: db
+      PGUSER: shelf
+      PGDATABASE: shelf_relay
+      PGPASSWORD: local-demo-database-only
+      DJANGO_SECRET_KEY: public-local-demo-only-do-not-use-on-a-network
+      DJANGO_DEBUG: "1"
+    depends_on:
+      db:
+        condition: service_healthy
+volumes:
+  shelf_data:
