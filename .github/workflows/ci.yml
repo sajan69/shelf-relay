@@ -85,7 +85,7 @@ jobs:
       - run: docker compose up -d db
       - run: docker compose run --rm web python manage.py migrate --noinput
       - run: docker compose run --rm web python manage.py demo --demo
-      - run: docker compose up -d web
+      - run: docker compose up -d --wait web
       - name: Check local demo login page
         run: |
           curl --fail --retry 10 --retry-connrefused --retry-delay 2 http://127.0.0.1:8000/login/ -o /tmp/shelf-login.html

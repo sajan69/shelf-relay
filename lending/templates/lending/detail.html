@@ -67,7 +67,7 @@
     <p class="muted">Latest 20 events. Original incomplete-return records remain after resolution.</p>
     <ol>
       {% for event in events %}
-        <li>{{ event.at|date:'j M Y H:i' }} · {{ event.action }} · {{ event.actor.username }}{% if event.note %} — {{ event.note }}{% endif %}
+        <li>{{ event.at|date:'j M Y H:i' }} · {{ event.action_label }} · {{ event.actor.username }}{% if event.note %} — {{ event.note }}{% endif %}
         </li>
       {% endfor %}
     </ol>

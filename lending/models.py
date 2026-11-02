@@ -89,3 +89,15 @@ class Event(models.Model):
 
     class Meta:
         ordering = ["-at", "-pk"]
+
+    @property
+    def action_label(self):
+        return {
+            "created": "Item added",
+            "reserved": "Reservation saved",
+            "checked_out": "Handover recorded",
+            "cancelled": "Reservation cancelled",
+            "returned_incomplete": "Incomplete return recorded",
+            "returned_complete": "Complete return recorded",
+            "attention_resolved": "Missing components resolved",
+        }.get(self.action, "Other event")

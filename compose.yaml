@@ -26,5 +26,15 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "from urllib.request import urlopen; assert
+          urlopen('http://127.0.0.1:8000/login/', timeout=3).status == 200"
+      interval: 3s
+      timeout: 4s
+      retries: 15
 volumes:
   shelf_data:

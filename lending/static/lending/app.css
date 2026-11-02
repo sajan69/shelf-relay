@@ -286,3 +286,8 @@ footer {
     padding: 20px;
   }
 }
+
+.card > a {
+  display: block;
+  margin-top: 12px;
+}

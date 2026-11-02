@@ -15,7 +15,7 @@ docker compose build
 docker compose up -d db
 docker compose run --rm web python manage.py migrate
 docker compose run --rm web python manage.py demo --demo
-docker compose up -d web
+docker compose up -d --wait web
 ```
 
 Open `http://127.0.0.1:8000`. Sign in as `demo-manager` or `demo-lender` with
